@@ -60,3 +60,21 @@ variable "terraform_state_bucket_name" {
   type        = string
   default     = "k8s-tf-state"
 }
+
+variable "network_name" {
+  description = "Name for the network."
+  type        = string
+  default     = "k8s-cluster-nw"
+}
+
+variable "subnet_name" {
+  description = "Name for the subnet."
+  type        = string
+  default     = "k8s-cluster-snw"
+}
+
+variable "subnet_cidr_block" {
+  description = "CIDR block for the subnet."
+  type        = string
+  default     = "10.0.0.0/24"
+}

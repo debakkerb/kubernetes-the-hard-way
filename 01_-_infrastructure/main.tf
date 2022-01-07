@@ -56,15 +56,11 @@ resource "google_storage_bucket" "terraform_state_bucket" {
   }
 }
 
-data "template_file" "backend_template" {
-  template = file("${path.module}/templates/backend.tf.tpl")
-  vars = {
+resource "local_file" "backend_template" {
+  filename = "${path.module}/backend.tf"
+
+  content = templatefile("${path.module}/templates/backend.tf.tpl", {
     STATE_BUCKET_NAME = google_storage_bucket.terraform_state_bucket.name
     STATE_PREFIX      = format("%s-%s", var.prefix, "infra-state")
-  }
-}
-
-resource "local_file" "backend_template" {
-  filename = "backend.tf"
-  content  = data.template_file.backend_template.rendered
+  })
 }
