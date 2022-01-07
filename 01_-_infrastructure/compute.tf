@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+locals {
+  controller_instances_self_links = var.num_controllers != 0 ? [for k, v in google_compute_instance.controllers : v.self_link] : []
+}
+
 resource "google_service_account" "worker_identity" {
   project      = module.project.project_id
   account_id   = format("%s-%s", var.prefix, "worker-id")
