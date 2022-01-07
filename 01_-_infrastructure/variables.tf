@@ -78,3 +78,21 @@ variable "subnet_cidr_block" {
   type        = string
   default     = "10.0.0.0/24"
 }
+
+variable "enable_egress_traffic" {
+  description = "Enable egress traffic.  Necessary to download Kubernetes binaries, ..."
+  type        = bool
+  default     = true
+}
+
+variable "num_workers" {
+  description = "Number of workers to create."
+  type        = number
+  default     = 0
+}
+
+variable "num_controllers" {
+  description = "Number of controllers to create"
+  type        = number
+  default     = 0
+}

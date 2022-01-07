@@ -45,3 +45,64 @@ resource "google_compute_firewall" "fw_iap_access" {
 
   target_tags = ["iap-access"]
 }
+
+resource "google_compute_firewall" "lb_health_check" {
+  project   = module.project.project_id
+  name      = format("%s-%s", var.prefix, "fw-lb-hc")
+  network   = google_compute_network.default.name
+  direction = "INGRESS"
+
+  source_ranges = [
+    "209.85.152.0/22",
+    "209.85.204.0/22",
+    "35.191.0.0/16"
+  ]
+
+  allow {
+    protocol = "tcp"
+  }
+}
+
+resource "google_compute_address" "kube_api_server_endpoint" {
+  project      = module.project.project_id
+  name         = format("%s-%s", var.prefix, "control-plane-endpoint")
+  address_type = "EXTERNAL"
+  region       = var.region
+}
+
+resource "google_compute_router" "egress_traffic_router" {
+  count   = var.enable_egress_traffic ? 1 : 0
+  project = module.project.project_id
+  name    = format("%s-%s", var.prefix, "egress-traffic-rtr")
+  network = google_compute_network.default.name
+  region  = var.region
+
+  bgp {
+    asn = 64514
+  }
+}
+
+resource "google_compute_router_nat" "egress_traffic_nat" {
+  count                              = var.enable_egress_traffic ? 1 : 0
+  project                            = module.project.project_id
+  name                               = format("%s-%s", var.prefix, "egress-traffic-nat")
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  router                             = google_compute_router.egress_traffic_router.0.name
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  region                             = var.region
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+resource "google_compute_route" "egress_traffic_route" {
+  count            = var.enable_egress_traffic ? 1 : 0
+  project          = module.project.project_id
+  name             = format("%s-%s", var.prefix, "internet-access")
+  dest_range       = "0.0.0.0/0"
+  network          = google_compute_network.default.name
+  next_hop_gateway = "default-internet-gateway"
+}
+
