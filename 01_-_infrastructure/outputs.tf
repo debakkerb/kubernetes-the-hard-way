@@ -31,3 +31,19 @@ output "controllers" {
   sensitive = true
   value     = google_compute_instance.controllers
 }
+
+output "controller_instance_names" {
+  value = local.controller_instance_names
+}
+
+output "worker_instance_names" {
+  value = local.worker_instance_names
+}
+
+output "controller_instance_ip_addresses" {
+  value = local.controller_instance_ip_addresses
+}
+
+output "worker_instance_ip_addresses" {
+  value = local.worker_instance_ip_addresses
+}

@@ -16,6 +16,30 @@
 
 locals {
   controller_instances_self_links = var.num_controllers != 0 ? [for k, v in google_compute_instance.controllers : v.self_link] : []
+
+  controller_instance_names = [
+    for k, v in google_compute_instance.controllers : v.name
+  ]
+
+  worker_instance_names = [
+    for k, v in google_compute_instance.workers : v.name
+  ]
+
+  controller_instance_ip_addresses = flatten([
+    for instance in google_compute_instance.controllers : [
+      for network in instance.network_interface : [
+        network.network_ip
+      ]
+    ]
+  ])
+
+  worker_instance_ip_addresses = flatten([
+    for instance in google_compute_instance.workers : [
+      for network in instance.network_interface : [
+        network.network_ip
+      ]
+    ]
+  ])
 }
 
 resource "google_service_account" "worker_identity" {
