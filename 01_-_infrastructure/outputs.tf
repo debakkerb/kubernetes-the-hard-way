@@ -21,3 +21,13 @@ output "project_id" {
 output "project_name" {
   value = module.project.project_name
 }
+
+output "workers" {
+  sensitive = true
+  value     = google_compute_instance.workers
+}
+
+output "controllers" {
+  sensitive = true
+  value     = google_compute_instance.controllers
+}

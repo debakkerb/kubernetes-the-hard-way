@@ -110,3 +110,16 @@ resource "google_compute_route" "egress_traffic_route" {
   next_hop_gateway = "default-internet-gateway"
 }
 
+resource "google_compute_route" "pod_ip_routes" {
+  for_each = {
+    for instance in google_compute_instance.workers :
+    instance.name => instance
+  }
+
+  project     = module.project.project_id
+  name        = format("%s-%s-%s", var.prefix, "pod-route", each.key)
+  network     = google_compute_network.default.name
+  dest_range  = each.value.metadata.pod-cidr
+  next_hop_ip = each.value.network_interface[0].network_ip
+}
+

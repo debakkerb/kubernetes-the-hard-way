@@ -41,6 +41,10 @@ resource "google_compute_instance" "workers" {
   tags           = ["iap-access", "worker"]
   zone           = var.zone
 
+  metadata = {
+    pod-cidr = "10.200.${count.index}.0/24"
+  }
+
   boot_disk {
     initialize_params {
       image = data.google_compute_image.ubuntu.self_link
