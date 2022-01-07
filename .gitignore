@@ -5,3 +5,5 @@
 terraform.tfvars
 *.hcl
 *.tfstate*
+backend.tf
+*.pem
