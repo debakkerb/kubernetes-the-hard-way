@@ -61,6 +61,10 @@ resource "google_compute_firewall" "lb_health_check" {
   allow {
     protocol = "tcp"
   }
+
+  target_service_accounts = [
+    google_service_account.controller_identity.email
+  ]
 }
 
 resource "google_compute_address" "kube_api_server_endpoint" {
