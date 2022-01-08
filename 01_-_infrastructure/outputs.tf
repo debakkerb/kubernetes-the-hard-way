@@ -47,3 +47,15 @@ output "controller_instance_ip_addresses" {
 output "worker_instance_ip_addresses" {
   value = local.worker_instance_ip_addresses
 }
+
+output "api_server_endpoint" {
+  value = google_compute_address.kube_api_server_endpoint.address
+}
+
+output "region" {
+  value = var.region
+}
+
+output "zone" {
+  value = var.zone
+}

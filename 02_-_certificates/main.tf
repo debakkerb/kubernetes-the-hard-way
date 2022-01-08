@@ -114,18 +114,91 @@ module "kube_scheduler" {
 module "kube_api_server" {
   source = "./modules/certificates"
 
-  private_key_file_path = "${path.module}/output/kube-scheduler-key.pem"
-  public_key_file_path  = "${path.module}/output/kube-scheduler.pem"
+  private_key_file_path = "${path.module}/output/kubernetes-key.pem"
+  public_key_file_path  = "${path.module}/output/kubernetes.pem"
   allowed_use           = local.certificate_allowed_usage
   ca_private_key_pem    = module.certificate_authority.private_key_pem
   ca_cert_pem           = module.certificate_authority.public_key_pem
 
+  dns_names = [
+    "kubernetes,kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster",
+    "kubernetes.svc.cluster.local"
+  ]
+
+  ip_addresses = concat([
+    data.terraform_remote_state.infrastructure_state.outputs.api_server_endpoint,
+    "127.0.0.1",
+  ], data.terraform_remote_state.infrastructure_state.outputs.controller_instance_ip_addresses)
+
   subject = {
-    common_name         = "system:kube-scheduler"
-    organization        = "system:kube-scheduler"
+    common_name         = "kubernetes"
+    organization        = "Kubernetes"
     country_name        = "BE"
     organizational_unit = "K8S"
     locality            = "NA"
   }
 }
 
+module "service_account_keypair" {
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/service-account-key.pem"
+  public_key_file_path  = "${path.module}/output/service-account.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  subject = {
+    common_name         = "service-accounts"
+    organization        = "Kubernetes"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
+resource "null_resource" "copy_certificates_to_controllers" {
+  for_each = toset(data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names)
+
+  triggers = {
+    ca_pem_md5                  = md5(module.certificate_authority.public_key_pem)
+    ca_key_pem_md5              = md5(module.certificate_authority.private_key_pem)
+    kube_api_server_pem_md5     = md5(module.kube_api_server.public_key_pem)
+    kube_api_server_key_pem_md5 = md5(module.kube_api_server.private_key_pem)
+    service_account_pem_md5     = md5(module.service_account_keypair.public_key_pem)
+    service_account_key_pem_md5 = md5(module.service_account_keypair.private_key_pem)
+
+    project_id    = data.terraform_remote_state.infrastructure_state.outputs.project_id
+    zone          = data.terraform_remote_state.infrastructure_state.outputs.zone
+    instance_name = each.value
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<-EOT
+      gcloud compute scp \
+        --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
+        --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
+        ${path.module}/output/ca.pem \
+        ${path.module}/output/ca-key.pem \
+        ${path.module}/output/kubernetes-key.pem \
+        ${path.module}/output/kubernetes.pem \
+        ${path.module}/output/service-account-key.pem \
+        ${path.module}/output/service-account.pem \
+        ${each.value}:~/
+EOT
+  }
+
+  provisioner "local-exec" {
+    when = destroy
+    command = <<-EOT
+      gcloud compute ssh \
+        --zone ${self.triggers.zone} \
+        --project ${self.triggers.project_id} \
+        ${self.triggers.instance_name} \
+        --command="rm -rf *.pem"
+EOT
+  }
+}
