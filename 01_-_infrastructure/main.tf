@@ -15,8 +15,10 @@
  */
 
 locals {
-  project_name                = format("%s-%s", var.prefix, var.project_name)
-  terraform_state_bucket_name = format("%s-%s", var.prefix, var.terraform_state_bucket_name)
+  project_name                       = format("%s-%s", var.prefix, var.project_name)
+  terraform_state_bucket_name        = format("%s-%s", var.prefix, var.terraform_state_bucket_name)
+  terraform_state_infra_prefix       = format("%s-%s", var.prefix, "infra-state")
+  terraform_state_certificate_prefix = format("%s-%s", var.prefix, "certificate-state")
 }
 
 module "project" {

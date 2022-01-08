@@ -56,3 +56,76 @@ module "admin_user" {
     locality            = "NA"
   }
 }
+
+module "kube_controller_manager" {
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/kube-controller-manager-key.pem"
+  public_key_file_path  = "${path.module}/output/kube-controller-manager.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  subject = {
+    common_name         = "system:kube-controller-manager"
+    organization        = "system:kube-controller-manager"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
+module "proxy_client" {
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/kube-proxy-key.pem"
+  public_key_file_path  = "${path.module}/output/kube-proxy.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  subject = {
+    common_name         = "system:kube-proxy"
+    organization        = "system:node-proxier"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
+module "kube_scheduler" {
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/kube-scheduler-key.pem"
+  public_key_file_path  = "${path.module}/output/kube-scheduler.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  subject = {
+    common_name         = "system:kube-scheduler"
+    organization        = "system:kube-scheduler"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
+module "kube_api_server" {
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/kube-scheduler-key.pem"
+  public_key_file_path  = "${path.module}/output/kube-scheduler.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  subject = {
+    common_name         = "system:kube-scheduler"
+    organization        = "system:kube-scheduler"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
