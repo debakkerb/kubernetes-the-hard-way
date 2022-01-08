@@ -51,13 +51,40 @@ variable "validity" {
 variable "subject" {
   description = "Subject for the certificate."
   type = object({
-    common_name  = string
-    organization = string
+    common_name         = string
+    organization        = string
+    country_name        = string
+    organizational_unit = string
+    locality            = string
   })
 }
 
-variable "ca_public_key_file_path" {
+variable "public_key_file_path" {
   description = "File path where the public certificate will be stored."
+  type        = string
+  default     = null
+}
+
+variable "dns_names" {
+  description = "DNS names for which the certificate is generated."
+  type        = list(string)
+  default     = []
+}
+
+variable "ip_addresses" {
+  description = "IP addresses for which the certificate is generated."
+  type        = list(string)
+  default     = []
+}
+
+variable "ca_private_key_pem" {
+  description = "PEM content of the private key for the CA."
+  type        = string
+  default     = null
+}
+
+variable "ca_cert_pem" {
+  description = "PEM content of the CA certificate."
   type        = string
   default     = null
 }

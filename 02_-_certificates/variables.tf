@@ -13,13 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-output "private_key_pem" {
-  sensitive = true
-  value = tls_private_key.private_key.private_key_pem
-}
-
-output "public_key_pem" {
-  sensitive = true
-  value = var.is_certificate_authority ? tls_self_signed_cert.certificate_authority_certificate.0.cert_pem : tls_locally_signed_cert.certificate.0.cert_pem
-}

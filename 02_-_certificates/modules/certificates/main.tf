@@ -32,14 +32,49 @@ resource "tls_self_signed_cert" "certificate_authority_certificate" {
   validity_period_hours = var.validity
 
   subject {
-    common_name  = var.subject.common_name
-    organization = var.subject.organization
+    common_name         = var.subject.common_name
+    organization        = var.subject.organization
+    country             = var.subject.country_name
+    organizational_unit = var.subject.organizational_unit
+    locality            = var.subject.locality
   }
 }
 
 resource "local_file" "certificate_authority_cert" {
   count    = var.is_certificate_authority ? 1 : 0
-  filename = var.ca_public_key_file_path
+  filename = var.public_key_file_path
   content  = tls_self_signed_cert.certificate_authority_certificate.0.cert_pem
+}
+
+resource "tls_cert_request" "certificate_request" {
+  count           = var.is_certificate_authority ? 0 : 1
+  key_algorithm   = tls_private_key.private_key.algorithm
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  dns_names       = var.dns_names
+  ip_addresses    = var.ip_addresses
+
+  subject {
+    organization        = var.subject.organization
+    common_name         = var.subject.common_name
+    country             = var.subject.country_name
+    organizational_unit = var.subject.organizational_unit
+    locality            = var.subject.locality
+  }
+}
+
+resource "tls_locally_signed_cert" "certificate" {
+  count                 = var.is_certificate_authority ? 0 : 1
+  allowed_uses          = var.allowed_use
+  validity_period_hours = var.validity
+  ca_cert_pem           = var.ca_cert_pem
+  ca_key_algorithm      = var.algorithm
+  ca_private_key_pem    = var.ca_private_key_pem
+  cert_request_pem      = tls_cert_request.certificate_request.0.cert_request_pem
+}
+
+resource "local_file" "certificate" {
+  count    = var.is_certificate_authority ? 0 : 1
+  filename = var.public_key_file_path
+  content  = tls_locally_signed_cert.certificate.0.cert_pem
 }
 
