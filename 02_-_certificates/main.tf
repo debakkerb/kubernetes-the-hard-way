@@ -159,6 +159,37 @@ module "service_account_keypair" {
   }
 }
 
+
+module "kubelet" {
+  for_each = {
+    for instance in data.terraform_remote_state.infrastructure_state.outputs.workers :
+    instance.name => instance
+  }
+  source = "./modules/certificates"
+
+  private_key_file_path = "${path.module}/output/kubelet-${each.value.name}-key.pem"
+  public_key_file_path  = "${path.module}/output/kubelet-${each.value.name}.pem"
+  allowed_use           = local.certificate_allowed_usage
+  ca_private_key_pem    = module.certificate_authority.private_key_pem
+  ca_cert_pem           = module.certificate_authority.public_key_pem
+
+  dns_names = [
+    each.value.name
+  ]
+
+  ip_addresses = [
+    each.value.network_interface.0.network_ip
+  ]
+
+  subject = {
+    common_name         = "service-accounts"
+    organization        = "Kubernetes"
+    country_name        = "BE"
+    organizational_unit = "K8S"
+    locality            = "NA"
+  }
+}
+
 resource "null_resource" "copy_certificates_to_controllers" {
   for_each = toset(data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names)
 
@@ -192,7 +223,47 @@ EOT
   }
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
+    command = <<-EOT
+      gcloud compute ssh \
+        --zone ${self.triggers.zone} \
+        --project ${self.triggers.project_id} \
+        ${self.triggers.instance_name} \
+        --command="rm -rf *.pem"
+EOT
+  }
+}
+
+resource "null_resource" "copy_certificates_to_workers" {
+  for_each = toset(data.terraform_remote_state.infrastructure_state.outputs.worker_instance_names)
+
+  triggers = {
+    ca_pem_md5          = md5(module.certificate_authority.public_key_pem)
+    ca_key_pem_md5      = md5(module.certificate_authority.private_key_pem)
+    kubelet_pem_md5     = md5(module.kubelet[each.value].public_key_pem)
+    kubelet_key_pem_md5 = md5(module.kubelet[each.value].private_key_pem)
+
+    project_id    = data.terraform_remote_state.infrastructure_state.outputs.project_id
+    zone          = data.terraform_remote_state.infrastructure_state.outputs.zone
+    instance_name = each.value
+  }
+
+  provisioner "local-exec" {
+    when    = create
+    command = <<-EOT
+      gcloud compute scp \
+        --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
+        --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
+        ${path.module}/output/ca.pem \
+        ${path.module}/output/ca-key.pem \
+        ${path.module}/output/kubelet-${each.value}.pem \
+        ${path.module}/output/kubelet-${each.value}-key.pem \
+        ${each.value}:~/
+EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
     command = <<-EOT
       gcloud compute ssh \
         --zone ${self.triggers.zone} \
