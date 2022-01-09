@@ -30,5 +30,21 @@ resource "local_file" "encryption_key_config" {
 }
 
 resource "null_resource" "copy_config_to_control_plane" {
-  for_each = toset()
+  triggers = {
+    zone          = data.terraform_remote_state.infrastructure_state.outputs.zone
+    project_id       = data.terraform_remote_state.infrastructure_state.outputs.project_id
+    instance_name = each.value
+  }
+
+  for_each = toset(data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names)
+  provisioner "local-exec" {
+    when    = create
+    command = <<-EOT
+      gcloud compute scp \
+        --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
+        --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
+        ${abspath(local_file.encryption_key_config.filename)} \
+        ${each.value}:~/
+EOT
+  }
 }

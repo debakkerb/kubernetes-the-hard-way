@@ -221,17 +221,6 @@ resource "null_resource" "copy_certificates_to_controllers" {
         ${each.value}:~/
 EOT
   }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<-EOT
-      gcloud compute ssh \
-        --zone ${self.triggers.zone} \
-        --project ${self.triggers.project_id} \
-        ${self.triggers.instance_name} \
-        --command="rm -rf *.pem"
-EOT
-  }
 }
 
 resource "null_resource" "copy_certificates_to_workers" {
@@ -259,17 +248,6 @@ resource "null_resource" "copy_certificates_to_workers" {
         ${path.module}/output/kubelet-${each.value}.pem \
         ${path.module}/output/kubelet-${each.value}-key.pem \
         ${each.value}:~/
-EOT
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<-EOT
-      gcloud compute ssh \
-        --zone ${self.triggers.zone} \
-        --project ${self.triggers.project_id} \
-        ${self.triggers.instance_name} \
-        --command="rm -rf *.pem"
 EOT
   }
 }
