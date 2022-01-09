@@ -56,7 +56,7 @@ ExecStart=/usr/local/bin/etcd \\
   --listen-client-urls https://${INTERNAL_IP}:2379,https://127.0.0.1:2379 \\
   --advertise-client-urls https://${INTERNAL_IP}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster khw-controller-0=https://10.0.0.4:2380,khw-controller-1=https://10.0.0.6:2380,khw-controller-2=https://10.0.0.5:2380
+  --initial-cluster khw-controller-0=https://10.0.0.18:2380,khw-controller-1=https://10.0.0.16:2380,khw-controller-2=https://10.0.0.14:2380
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure

@@ -30,6 +30,7 @@ resource "tls_self_signed_cert" "certificate_authority_certificate" {
   key_algorithm         = var.algorithm
   private_key_pem       = tls_private_key.private_key.private_key_pem
   validity_period_hours = var.validity
+  is_ca_certificate     = var.is_certificate_authority
 
   subject {
     common_name         = var.subject.common_name

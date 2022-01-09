@@ -85,8 +85,8 @@ resource "google_compute_firewall" "internal_comms" {
   }
 
   source_ranges = [
-    "10.240.0.0/24",
-    "10.200.0.0/16"
+    google_compute_subnetwork.default.ip_cidr_range,
+    "10.200.0.0/16", //IP ranges for the Pods, created on the VMs themselves
   ]
 }
 
