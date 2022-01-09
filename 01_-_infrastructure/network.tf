@@ -67,6 +67,29 @@ resource "google_compute_firewall" "lb_health_check" {
   ]
 }
 
+resource "google_compute_firewall" "internal_comms" {
+  project = module.project.project_id
+  name    = format("%s-%s", var.prefix, "fw-internal-comms")
+  network = google_compute_network.default.name
+
+  allow {
+    protocol = "tcp"
+  }
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "udp"
+  }
+
+  source_ranges = [
+    "10.240.0.0/24",
+    "10.200.0.0/16"
+  ]
+}
+
 resource "google_compute_address" "kube_api_server_endpoint" {
   project      = module.project.project_id
   name         = format("%s-%s", var.prefix, "control-plane-endpoint")

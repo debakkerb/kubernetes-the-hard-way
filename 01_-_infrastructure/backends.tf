@@ -55,3 +55,17 @@ resource "local_file" "encryption_key_backend" {
     INFRASTRUCTURE_STATE_PREFIX      = local.terraform_state_infra_prefix
   })
 }
+
+resource "local_file" "etcd_backend" {
+  filename = "../05_-_etcd/backend.tf"
+  content = templatefile("${path.module}/templates/backend.tf.tpl", {
+    STATE_BUCKET_NAME                = google_storage_bucket.terraform_state_bucket.name
+    STATE_PREFIX                     = format("%s-%s", var.prefix, "etcd-state")
+    INCLUDE_CERTIFICATES             = false
+    INCLUDE_INFRASTRUCTURE           = true
+    CERTIFICATE_REMOTE_STATE_NAME    = null
+    CERTIFICATE_STATE_PREFIX         = null
+    INFRASTRUCTURE_REMOTE_STATE_NAME = "infrastructure"
+    INFRASTRUCTURE_STATE_PREFIX      = local.terraform_state_infra_prefix
+  })
+}

@@ -8,5 +8,4 @@ terraform.tfvars
 backend.tf
 *.pem
 
-**/*.kubeconfig
-**/encryption_config.yaml
+**/output
