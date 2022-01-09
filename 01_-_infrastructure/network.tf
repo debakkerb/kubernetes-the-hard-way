@@ -90,6 +90,20 @@ resource "google_compute_firewall" "internal_comms" {
   ]
 }
 
+resource "google_compute_firewall" "external_comms" {
+  project = module.project.project_id
+  name    = format("%s-%s", var.prefix, "fw-external-comms")
+  network = google_compute_network.default.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "6443"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["controllers"]
+}
+
 resource "google_compute_address" "kube_api_server_endpoint" {
   project      = module.project.project_id
   name         = format("%s-%s", var.prefix, "control-plane-endpoint")

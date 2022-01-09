@@ -22,6 +22,8 @@ USERNAME=$4
 CLIENT_CERTIFICATE=$5
 CLIENT_CERTIFICATE_KEY=$6
 
+echo "$@"
+
 echo "Creating .kubeconfig files for the different layers."
 
 echo "Adding cluster information ..."
@@ -31,15 +33,19 @@ kubectl config set-cluster kubernetes \
   --server=https://${SERVER_IP_ADDRESS}:6443 \
   --kubeconfig=${KUBECONFIG_FILENAME}
 
-#echo "Adding user credentials ..."
-#kubectl config set-credentials ${USERNAME} \
-#  --client-certificate=${CLIENT_CERTIFICATE} \
-#  --client-key=${CLIENT_CERTIFICATE_KEY} \
-#  --embed-certs=true \
-#  --kubeconfig=${KUBECONFIG_FILENAME}
-#
-#echo "Linking cluster to credentials ..."
-#kubectl config set-context default \
-#  --cluster=kubernetes \
-#  --user=${USERNAME} \
-#  --kubeconfig=${KUBECONFIG_FILENAME}
+echo "Adding user credentials ..."
+kubectl config set-credentials ${USERNAME} \
+  --client-certificate=${CLIENT_CERTIFICATE} \
+  --client-key=${CLIENT_CERTIFICATE_KEY} \
+  --embed-certs=true \
+  --kubeconfig=${KUBECONFIG_FILENAME}
+
+echo "Linking cluster to credentials ..."
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=${USERNAME} \
+  --kubeconfig=${KUBECONFIG_FILENAME}
+
+echo "Instruct kubectl to use the configuration ..."
+kubectl config use-context default --kubeconfig=${KUBECONFIG_FILENAME}
+

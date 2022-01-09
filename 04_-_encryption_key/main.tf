@@ -23,7 +23,7 @@ resource "random_string" "encryption_key" {
 }
 
 resource "local_file" "encryption_key_config" {
-  filename = "${path.module}/output/encryption_config.yaml"
+  filename = "${path.module}/output/encryption-config.yaml"
   content = templatefile("${path.module}/templates/encryption_config.yaml.tpl", {
     ENCRYPTION_KEY = base64encode(random_string.encryption_key.result)
   })
