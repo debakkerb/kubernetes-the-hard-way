@@ -19,7 +19,20 @@ output "private_key_pem" {
   value = tls_private_key.private_key.private_key_pem
 }
 
+output "private_key_pem_filepath" {
+  value = abspath(local_file.private_key.filename)
+}
+
 output "public_key_pem" {
   sensitive = true
-  value = var.is_certificate_authority ? tls_self_signed_cert.certificate_authority_certificate.0.cert_pem : tls_locally_signed_cert.certificate.0.cert_pem
+  value = (var.is_certificate_authority
+    ? tls_self_signed_cert.certificate_authority_certificate.0.cert_pem
+    : tls_locally_signed_cert.certificate.0.cert_pem)
 }
+
+output "public_key_pem_filepath" {
+  value = (var.is_certificate_authority
+    ? abspath(local_file.certificate_authority_cert.0.filename)
+    : abspath(local_file.certificate.0.filename))
+}
+

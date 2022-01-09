@@ -7,3 +7,5 @@ terraform.tfvars
 *.tfstate*
 backend.tf
 *.pem
+
+**/*.kubeconfig

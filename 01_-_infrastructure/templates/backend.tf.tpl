@@ -15,14 +15,34 @@
  */
 
 provider "google" {
-  region = var.region
-  zone   = var.zone
+  region = %{if INCLUDE_CERTIFICATES || INCLUDE_INFRASTRUCTURE}data.terraform_remote_state.infrastructure_state.outputs.region%{else}var.region%{endif}
+  zone   = %{if INCLUDE_CERTIFICATES || INCLUDE_INFRASTRUCTURE}data.terraform_remote_state.infrastructure_state.outputs.zone%{else}var.zone%{endif}
 }
 
 provider "google-beta" {
-  region = var.region
-  zone   = var.zone
+  region = %{if INCLUDE_CERTIFICATES || INCLUDE_INFRASTRUCTURE}data.terraform_remote_state.infrastructure_state.outputs.region%{else}var.region%{endif}
+  zone   = %{if INCLUDE_CERTIFICATES || INCLUDE_INFRASTRUCTURE}data.terraform_remote_state.infrastructure_state.outputs.zone%{else}var.zone%{endif}
 }
+
+%{if INCLUDE_CERTIFICATES }
+data "terraform_remote_state" "${CERTIFICATE_REMOTE_STATE_NAME}_state" {
+  backend = "gcs"
+  config = {
+    bucket = "${STATE_BUCKET_NAME}"
+    prefix = "${CERTIFICATE_STATE_PREFIX}"
+  }
+}
+%{endif}
+
+%{if INCLUDE_INFRASTRUCTURE}
+data "terraform_remote_state" "${INFRASTRUCTURE_REMOTE_STATE_NAME}_state" {
+  backend = "gcs"
+  config = {
+    bucket = "${STATE_BUCKET_NAME}"
+    prefix = "${INFRASTRUCTURE_STATE_PREFIX}"
+  }
+}
+%{endif}
 
 terraform {
   backend "gcs" {

@@ -62,7 +62,13 @@ resource "local_file" "backend_template" {
   filename = "${path.module}/backend.tf"
 
   content = templatefile("${path.module}/templates/backend.tf.tpl", {
-    STATE_BUCKET_NAME = google_storage_bucket.terraform_state_bucket.name
-    STATE_PREFIX      = format("%s-%s", var.prefix, "infra-state")
+    STATE_BUCKET_NAME                = google_storage_bucket.terraform_state_bucket.name
+    STATE_PREFIX                     = format("%s-%s", var.prefix, "infra-state")
+    INCLUDE_CERTIFICATES             = false
+    INCLUDE_INFRASTRUCTURE           = false
+    CERTIFICATE_REMOTE_STATE_NAME    = null
+    CERTIFICATE_STATE_PREFIX         = null
+    INFRASTRUCTURE_REMOTE_STATE_NAME = null
+    INFRASTRUCTURE_STATE_PREFIX      = null
   })
 }

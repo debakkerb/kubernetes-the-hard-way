@@ -16,11 +16,28 @@
 
 resource "local_file" "certificate_backend" {
   filename = "../02_-_certificates/backend.tf"
-  content = templatefile("${path.module}/templates/backend.other.tf.tpl", {
-    REMOTE_STATE_NAME   = "infrastructure"
-    REMOTE_STATE_BUCKET = google_storage_bucket.terraform_state_bucket.name
-    REMOTE_STATE_PREFIX = local.terraform_state_infra_prefix
-    STATE_BUCKET_NAME   = google_storage_bucket.terraform_state_bucket.name
-    STATE_PREFIX        = local.terraform_state_certificate_prefix
+  content = templatefile("${path.module}/templates/backend.tf.tpl", {
+    STATE_BUCKET_NAME                = google_storage_bucket.terraform_state_bucket.name
+    STATE_PREFIX                     = format("%s-%s", var.prefix, "certificate-state")
+    INCLUDE_CERTIFICATES             = false
+    INCLUDE_INFRASTRUCTURE           = true
+    CERTIFICATE_REMOTE_STATE_NAME    = null
+    CERTIFICATE_STATE_PREFIX         = null
+    INFRASTRUCTURE_REMOTE_STATE_NAME = "infrastructure"
+    INFRASTRUCTURE_STATE_PREFIX      = local.terraform_state_infra_prefix
+  })
+}
+
+resource "local_file" "kubeconfig_backend" {
+  filename = "../03_-_kubeconfig/backend.tf"
+  content = templatefile("${path.module}/templates/backend.tf.tpl", {
+    STATE_BUCKET_NAME                = google_storage_bucket.terraform_state_bucket.name
+    STATE_PREFIX                     = format("%s-%s", var.prefix, "kubeconfig-state")
+    INCLUDE_CERTIFICATES             = true
+    INCLUDE_INFRASTRUCTURE           = true
+    CERTIFICATE_REMOTE_STATE_NAME    = "certificates"
+    CERTIFICATE_STATE_PREFIX         = format("%s-%s", var.prefix, "certificate-state")
+    INFRASTRUCTURE_REMOTE_STATE_NAME = "infrastructure"
+    INFRASTRUCTURE_STATE_PREFIX      = local.terraform_state_infra_prefix
   })
 }
