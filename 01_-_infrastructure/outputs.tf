@@ -49,7 +49,7 @@ output "worker_instance_ip_addresses" {
 }
 
 output "api_server_endpoint" {
-  value = google_compute_address.kube_api_server_endpoint.address
+  value = var.create_public_ip_address ? google_compute_address.kube_api_server_endpoint.0.address : ""
 }
 
 output "region" {

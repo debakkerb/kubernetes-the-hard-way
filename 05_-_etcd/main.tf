@@ -56,7 +56,7 @@ resource "null_resource" "bootstrap_etcd_cluster" {
         --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
         --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
         ${each.value} \
-        --command "./bootstrap_etcd.sh"
+        --command "./bootstrap_etcd.sh 2> etcd_err.log 1>etcd_out.log "
 EOT
   }
 

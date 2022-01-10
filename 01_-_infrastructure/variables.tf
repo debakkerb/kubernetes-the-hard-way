@@ -96,3 +96,9 @@ variable "num_controllers" {
   type        = number
   default     = 0
 }
+
+variable "create_public_ip_address" {
+  description = "Whether or not to create a static IP address, as these incur an extra cost."
+  type        = bool
+  default     = true
+}

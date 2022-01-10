@@ -4,7 +4,8 @@ Infrastructure is created in Google Cloud.  You should be able to run the cluste
 
 ## Resources
 
-I will detail the resources that play a role in running the cluster.  
+This section will explain the resources that are created as part of the environment.  The focus is on resources that matter, meaning that you won't find an explanation on the project itself for example.
 
 ## Network
+
 

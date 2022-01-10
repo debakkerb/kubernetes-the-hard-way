@@ -61,7 +61,7 @@ resource "null_resource" "bootstrap_worker_nodes" {
         --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
         --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
         ${each.value} \
-        --command="./bootstrap_control_plane.sh"
+        --command="./bootstrap_control_plane.sh 2> bootstrap_cp_err.log 1>bootstrap_cp_out.log"
 EOT
   }
 

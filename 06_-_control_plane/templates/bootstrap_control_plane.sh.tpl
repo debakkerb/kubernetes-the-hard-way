@@ -82,7 +82,7 @@ WantedBy=multi-user.target
 EOF
 
 echo "Configuring the Kubernetes controller manager ..."
-sudo mv kube-controller-manager /var/lib/kubernetes
+sudo mv kube-controller-manager.kubeconfig /var/lib/kubernetes
 cat <<EOF | sudo tee /etc/systemd/system/kube-controller-manager.service
 [Unit]
 Description=Kubernetes Controller Manager
@@ -137,7 +137,7 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable kube-apiserver ube-controller-manager kube-scheduler
+sudo systemctl enable kube-apiserver kube-controller-manager kube-scheduler
 sudo systemctl start kube-apiserver kube-controller-manager kube-scheduler
 
 echo "Enabling health checks ..."

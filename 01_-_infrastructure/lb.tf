@@ -26,6 +26,7 @@ resource "google_compute_target_pool" "control_plane_target_pool" {
   project   = module.project.project_id
   name      = format("%s-%s", var.prefix, "control-plane-pool")
   instances = local.controller_instances_self_links
+  region    = var.region
 
   health_checks = [
     google_compute_http_health_check.health_check.name
@@ -35,7 +36,7 @@ resource "google_compute_target_pool" "control_plane_target_pool" {
 resource "google_compute_forwarding_rule" "control_plane_forwarding_rule" {
   project               = module.project.project_id
   name                  = format("%s-%s", var.prefix, "control-plane-fwd-rule")
-  ip_address            = google_compute_address.kube_api_server_endpoint.address
+  ip_address            = google_compute_address.kube_api_server_endpoint.0.address
   port_range            = "6443"
   region                = var.region
   target                = google_compute_target_pool.control_plane_target_pool.self_link
