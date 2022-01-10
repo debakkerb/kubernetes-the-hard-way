@@ -10,4 +10,3 @@ backend.tf
 
 **/output
 **/scripts/bootstrap_etcd.sh
-**/scripts/
