@@ -69,3 +69,33 @@ EOT
     null_resource.copy_bootstrap_script_to_controllers
   ]
 }
+
+resource "null_resource" "copy_cluster_role_config" {
+  count = length(data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names) != 0 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud compute scp \
+        --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
+        --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
+        ${path.module}/kubelet_authorization/cluster_role.yaml ${path.module}/kubelet_authorization/cluster_role_binding.yaml \
+        ${data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names[0]}:~/
+EOT
+  }
+
+}
+
+resource "null_resource" "create_cluster_role" {
+  count = length(data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names) != 0 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud compute ssh \
+        --zone ${data.terraform_remote_state.infrastructure_state.outputs.zone} \
+        --project ${data.terraform_remote_state.infrastructure_state.outputs.project_id} \
+        ${data.terraform_remote_state.infrastructure_state.outputs.controller_instance_names[0]} \
+        --command="kubectl apply --kubeconfig admin.kubeconfig -f cluster_role.yaml,cluster_role_binding.yaml"
+EOT
+  }
+
+}

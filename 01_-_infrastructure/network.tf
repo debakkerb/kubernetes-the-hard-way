@@ -92,6 +92,9 @@ resource "google_compute_firewall" "api_server_access" {
     google_service_account.controller_identity.email
   ]
 
+  depends_on = [
+    google_compute_address.nat_external_ip_addresses,
+  ]
 }
 
 resource "google_compute_firewall" "etcd_server_access" {
