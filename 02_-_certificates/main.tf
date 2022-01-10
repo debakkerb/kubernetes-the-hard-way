@@ -182,8 +182,8 @@ module "kubelet" {
   ]
 
   subject = {
-    common_name         = "service-accounts"
-    organization        = "Kubernetes"
+    common_name         = "system:node:${each.value.name}"
+    organization        = "system:nodes"
     country_name        = "BE"
     organizational_unit = "K8S"
     locality            = "NA"

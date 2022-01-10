@@ -98,4 +98,8 @@ resource "null_resource" "create_cluster_role" {
 EOT
   }
 
+  depends_on = [
+    null_resource.copy_bootstrap_script_to_controllers,
+    null_resource.bootstrap_worker_nodes
+  ]
 }

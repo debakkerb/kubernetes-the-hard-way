@@ -31,3 +31,6 @@ echo "Bootstrapping etcd cluster ..."
 
 echo "Bootstrap control plane ..."
 (cd 06_-_control_plane && terraform init -reconfigure && terraform apply -auto-approve)
+
+echo "Bootstrap worker nodes ..."
+(cd 07_-_worker_nodes && terraform init -reconfigure && terraform apply -auto-approve)

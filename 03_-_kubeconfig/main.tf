@@ -98,6 +98,21 @@ EOT
   }
 }
 
+resource "null_resource" "local_kubeconfig" {
+  provisioner "local-exec" {
+    when    = create
+    command = <<-EOT
+      ${path.module}/scripts/kube_config.sh \
+        ${local.ca_certificate_key_path} \
+        ${data.terraform_remote_state.infrastructure_state.outputs.api_server_endpoint} \
+        ${path.module}/output/local.kubeconfig \
+        admin \
+        ${data.terraform_remote_state.certificates_state.outputs.admin_user_certificate_path} \
+        ${data.terraform_remote_state.certificates_state.outputs.admin_user_key_path}
+EOT
+  }
+}
+
 resource "null_resource" "copy_kubeconfig_to_workers" {
   for_each = toset(data.terraform_remote_state.infrastructure_state.outputs.worker_instance_names)
   provisioner "local-exec" {
@@ -139,5 +154,3 @@ EOT
     null_resource.kube_scheduler_kubeconfig
   ]
 }
-
-

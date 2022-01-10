@@ -109,7 +109,7 @@ WantedBy=multi-user.target
 EOF
 
 sudo mv kubelet-${HOSTNAME}-key.pem kubelet-${HOSTNAME}.pem /var/lib/kubelet/
-sudo mv $HOSTNAME}.kubeconfig /var/lib/kubelet/kubeconfig
+sudo mv ${HOSTNAME}.kubeconfig /var/lib/kubelet/kubeconfig
 sudo mv ca.pem /var/lib/kubernetes/
 
 cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
