@@ -84,13 +84,33 @@ resource "google_compute_firewall" "api_server_access" {
   }
 
   source_ranges = concat([
-    "78.23.159.34/32"
+    "78.23.159.34/32",
+    google_compute_subnetwork.default.ip_cidr_range
   ], local.nat_external_addresses)
 
   target_service_accounts = [
     google_service_account.controller_identity.email
   ]
 
+}
+
+resource "google_compute_firewall" "etcd_server_access" {
+  project = module.project.project_id
+  name    = format("%s-%s", var.prefix, "etcd-controller-access")
+  network = google_compute_network.default.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["2380", "2379"]
+  }
+
+  target_service_accounts = [
+    google_service_account.controller_identity.email
+  ]
+
+  source_service_accounts = [
+    google_service_account.controller_identity.email
+  ]
 }
 
 resource "google_compute_address" "kube_api_server_endpoint" {

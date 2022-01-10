@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 locals {
-  ca_certificate_key_path = data.terraform_remote_state.certificates_state.outputs.certificate_authority_key_path
+  ca_certificate_key_path = data.terraform_remote_state.certificates_state.outputs.certificate_authority_cert_path
 }
 
 resource "null_resource" "kubelet_kubeconfig" {
