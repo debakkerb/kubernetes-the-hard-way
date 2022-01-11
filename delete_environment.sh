@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo "Removing CoreDNS from the cluster"
+(cd 08_-_dns && ./deploy_coredns_18.sh)
+
 echo "Removing worker configs"
 (cd 07_-_worker_nodes && terraform init -reconfigure && terraform destroy -auto-approve)
 
@@ -34,6 +37,5 @@ echo "Removing certificates ..."
 
 echo "Removing instances ..."
 (cd 01_-_infrastructure && terraform init -reconfigure && terraform apply -auto-approve -var=num_workers=0 -var=num_controllers=0)
-
 
 echo "All resources have been deleted, apart from the project and network resources (these don't incur any costs)."
