@@ -34,3 +34,5 @@ echo "Bootstrap control plane ..."
 
 echo "Bootstrap worker nodes ..."
 (cd 07_-_worker_nodes && terraform init -reconfigure && terraform apply -auto-approve)
+
+source ./set_env.sh
