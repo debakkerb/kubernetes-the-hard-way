@@ -36,3 +36,6 @@ echo "Bootstrap worker nodes ..."
 (cd 07_-_worker_nodes && terraform init -reconfigure && terraform apply -auto-approve)
 
 source ./set_env.sh
+
+echo "Deploying coreDNS ..."
+(cd 08_-_dns && ./deploy_coredns_18.sh)

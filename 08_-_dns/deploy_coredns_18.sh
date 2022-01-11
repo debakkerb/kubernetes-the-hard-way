@@ -14,12 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function set_environment() {
-  CURRENT_DIR=$(pwd)
-  export KUBECONFIG=${CURRENT_DIR}/03_-_kubeconfig/output/local.kubeconfig
-  export KUBERNETES_PUBLIC_ADDRESS=$(cd 01_-_infrastructure && terraform show -json | jq -r .values.outputs.api_server_endpoint.value)
-}
+echo "Deploying CoreDNS on the cluster ..."
+kubectl --kubeconfig ../03_-_kubeconfig/output/local.kubeconfig apply -f ./config/coredns-1.8.yaml
 
-echo "Setting environment variables ..."
-set_environment
-echo "Environment variables set."
+DEPLOYMENT_STATUS=$(kubectl get deployments -n kube-system -o jsonpath="{.items[0].status.availableReplicas}")
+
+while [ ${DEPLOYMENT_STATUS:-0} -ne 2 ]
+do
+  echo "Waiting for deployment to come up."
+  sleep 1
+
+  DEPLOYMENT_STATUS=$(kubectl get deployments -n kube-system -o jsonpath="{.items[0].status.availableReplicas}")
+done
+
+echo "Deployment done"
