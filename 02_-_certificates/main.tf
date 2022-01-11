@@ -130,6 +130,7 @@ module "kube_api_server" {
   ip_addresses = concat([
     data.terraform_remote_state.infrastructure_state.outputs.api_server_endpoint,
     "127.0.0.1",
+    "10.32.0.1", //First IP in the address range used to bootstrap the control plane
   ], data.terraform_remote_state.infrastructure_state.outputs.controller_instance_ip_addresses)
 
   subject = {

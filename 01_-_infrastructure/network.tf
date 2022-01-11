@@ -97,22 +97,26 @@ resource "google_compute_firewall" "api_server_access" {
   ]
 }
 
-resource "google_compute_firewall" "etcd_server_access" {
+resource "google_compute_firewall" "allow_all_internal_access" {
   project = module.project.project_id
-  name    = format("%s-%s", var.prefix, "etcd-controller-access")
+  name    = format("%s-%s", var.prefix, "fw-internal-access")
   network = google_compute_network.default.name
 
   allow {
     protocol = "tcp"
-    ports    = ["2380", "2379"]
   }
 
-  target_service_accounts = [
-    google_service_account.controller_identity.email
-  ]
+  allow {
+    protocol = "icmp"
+  }
 
-  source_service_accounts = [
-    google_service_account.controller_identity.email
+  allow {
+    protocol = "udp"
+  }
+
+  source_ranges = [
+    google_compute_subnetwork.default.ip_cidr_range,
+    "10.200.0.0/16"
   ]
 }
 
