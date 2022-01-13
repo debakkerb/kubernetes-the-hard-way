@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Removing CoreDNS from the cluster"
-(cd 08_-_dns && ./delete_coredns_18.sh)
-
 echo "Removing worker configs"
 (cd 07_-_worker_nodes && terraform init -reconfigure && terraform destroy -auto-approve)
 
