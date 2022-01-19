@@ -70,7 +70,8 @@ resource "google_compute_instance" "workers" {
   zone           = var.zone
 
   metadata = {
-    pod-cidr = "10.200.${count.index}.0/24"
+    pod-cidr     = "10.200.${count.index}.0/24"
+    service-cidr = "10.210.${count.index}.0/24"
   }
 
   boot_disk {
@@ -99,6 +100,12 @@ resource "google_compute_instance" "controllers" {
   can_ip_forward = true
   tags           = ["iap-access", "controller"]
   zone           = var.zone
+
+  metadata = {
+    pod-cidr               = "10.215.${count.index}.0/24"
+    service-cidr           = "10.220.${count.index}.0/24"
+    control-plane-endpoint = google_compute_address.kube_api_server_endpoint.address
+  }
 
   boot_disk {
     initialize_params {
