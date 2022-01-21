@@ -40,6 +40,12 @@ locals {
       ]
     ]
   ])
+
+  controller_project_iam_permissions = [
+    "roles/storage.admin",
+    "roles/logging.logWriter",
+    "roles/compute.instanceAdmin.v1"
+  ]
 }
 
 resource "google_service_account" "worker_identity" {
@@ -53,6 +59,13 @@ resource "google_service_account" "controller_identity" {
   project     = module.project.project_id
   account_id  = format("%s-%s", var.prefix, "controller-id")
   description = "Controller Identity"
+}
+
+resource "google_project_iam_member" "controller_identity_permissions" {
+  for_each = toset(local.controller_project_iam_permissions)
+  project  = module.project.project_id
+  member   = "serviceAccount:${google_service_account.controller_identity.email}"
+  role     = each.value
 }
 
 data "google_compute_image" "ubuntu" {
@@ -93,18 +106,19 @@ resource "google_compute_instance" "workers" {
 }
 
 resource "google_compute_instance" "controllers" {
-  count          = var.num_controllers
-  project        = module.project.project_id
-  name           = format("%s-%s-%s", var.prefix, "controller", count.index)
-  machine_type   = "e2-standard-2"
-  can_ip_forward = true
-  tags           = ["iap-access", "controller"]
-  zone           = var.zone
+  count                   = var.num_controllers
+  project                 = module.project.project_id
+  name                    = format("%s-%s-%s", var.prefix, "controller", count.index)
+  machine_type            = "e2-standard-2"
+  can_ip_forward          = true
+  tags                    = ["iap-access", "controller"]
+  zone                    = var.zone
+  metadata_startup_script = file("${path.module}/scripts/bootstrap_control_plane.sh")
 
   metadata = {
     pod-cidr               = "10.215.${count.index}.0/24"
     service-cidr           = "10.220.${count.index}.0/24"
-    control-plane-endpoint = google_compute_address.kube_api_server_endpoint.address
+    control-plane-endpoint = google_compute_address.kube_api_server_endpoint.0.address
   }
 
   boot_disk {
