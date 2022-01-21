@@ -18,8 +18,8 @@ resource "google_compute_http_health_check" "health_check" {
   project      = module.project.project_id
   name         = format("%s-%s", var.prefix, "control-plane")
   description  = "Health Check for the control plane."
-  host         = "kubernetes.default.svc.cluster.local"
-  request_path = "/healthz"
+  request_path = "/livez"
+  port         = 6443
 }
 
 resource "google_compute_target_pool" "control_plane_target_pool" {

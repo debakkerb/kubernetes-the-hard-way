@@ -8,3 +8,25 @@ In case people end up here by accident or they are looking for some guidance in 
 - [Infrastructure](./01_-_infrastructure)
 - [Certificates](./02_-_certificates)
 
+
+# Kubeadm
+
+The CKA exam focuses on using `kubeadm` to create and upgrade the cluster.  For that, I've created a script that creates that installs the necessary binaries (`kubeadm`, `kubectl` and `kubelet`) to create the cluster.  However, this can't be completely automated, so there are a few steps you need to execute manually.
+
+## .bashrc
+First, update `.bashrc` with a few environment variables.  We can't do this as part of the startup script, as the script is run as `root` and not as the user you will login with:
+```shell
+echo 'export SERVICE_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/service-cidr)' >> ~/.bashrc
+echo 'export CONTROL_PLANE_ENDPOINT=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/control-plane-endpoint)' >> ~/.bashrc
+echo 'export POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)' >> ~/.bashrc
+```
+
+## Update systemd driver
+Use the `systemd`-driver by updating `/etc/containerd/config.toml`:
+```yaml
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
