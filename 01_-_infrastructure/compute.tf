@@ -113,7 +113,7 @@ resource "google_compute_instance" "controllers" {
   can_ip_forward          = true
   tags                    = ["iap-access", "controller"]
   zone                    = var.zone
-  metadata_startup_script = file("${path.module}/scripts/bootstrap_control_plane_kubeadm.sh")
+  metadata_startup_script = var.use_kubeadm ? file("${path.module}/scripts/bootstrap_control_plane_kubeadm.sh") : ""
 
   metadata = {
     pod-cidr               = "10.215.${count.index}.0/24"

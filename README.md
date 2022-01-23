@@ -19,6 +19,7 @@ First, update `.bashrc` with a few environment variables.  We can't do this as p
 echo 'export SERVICE_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/service-cidr)' >> ~/.bashrc
 echo 'export CONTROL_PLANE_ENDPOINT=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/control-plane-endpoint)' >> ~/.bashrc
 echo 'export POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)' >> ~/.bashrc
+source ~/.bashrc  
 ```
 
 ## Update systemd driver
@@ -30,3 +31,26 @@ Use the `systemd`-driver by updating `/etc/containerd/config.toml`:
     SystemdCgroup = true
 ```
 
+### kubeadm init
+Login on the first controller node and run the following command to initialise the control plane on the first node:
+```shell
+sudo kubeadm init \
+  --control-plane-endpoint "${CONTROL_PLANE_ENDPOINT}:6443" \
+  --upload-certs \
+  --skip-phases=addon/kube-proxy \
+  --pod-network-cidr=$POD_CIDR \
+  --service-cidr=$SERVICE_CIDR
+```
+
+```shell
+helm install cilium cilium/cilium --version 1.11.1 \
+    --namespace kube-system \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${CONTROL_PLANE_ENDPOINT} \
+    --set k8sServicePort=6443
+```
+
+To generate the join command again, run the following:
+```shell
+kubeadm token create $(kubeadm token generate) --print-join-command
+```

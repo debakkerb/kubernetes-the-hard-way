@@ -63,6 +63,16 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+
+sudo systemctl restart docker
+
+echo "Docker installed and Cgroup configured."
+
 sudo apt-get  update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
@@ -93,6 +103,12 @@ sudo apt-get update
 sudo apt-get install helm
 
 helm repo add cilium https://helm.cilium.io/
+
+echo "Installing cilium ..."
+curl -L --remote-name-all https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz{,.sha256sum}
+sha256sum --check cilium-linux-amd64.tar.gz.sha256sum
+sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
+rm cilium-linux-amd64.tar.gz{,.sha256sum}
 
 echo "Startup script completed."
 

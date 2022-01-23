@@ -18,6 +18,10 @@ locals {
   nat_external_addresses = [
     for address in google_compute_address.nat_external_ip_addresses : "${address.address}/32"
   ]
+
+  api_endpoint_access = concat([
+    "78.23.159.34/32",
+  ], local.nat_external_addresses)
 }
 
 resource "google_compute_network" "default" {
@@ -74,19 +78,17 @@ resource "google_compute_firewall" "lb_health_check" {
 }
 
 resource "google_compute_firewall" "api_server_access" {
-  project = module.project.project_id
-  name    = format("%s-%s", var.prefix, "workers-to-lb")
-  network = google_compute_network.default.name
+  project     = module.project.project_id
+  name        = format("%s-%s", var.prefix, "api-server-access")
+  description = "FW rule to allow access to the public endpoint of the LB, providing access to the API server."
+  network     = google_compute_network.default.name
 
   allow {
     protocol = "tcp"
     ports    = ["6443"]
   }
 
-  source_ranges = concat([
-    "78.23.159.34/32",
-    google_compute_subnetwork.default.ip_cidr_range
-  ], local.nat_external_addresses)
+  source_ranges = local.api_endpoint_access
 
   target_service_accounts = [
     google_service_account.controller_identity.email
@@ -116,7 +118,7 @@ resource "google_compute_firewall" "allow_all_internal_access" {
 
   source_ranges = [
     google_compute_subnetwork.default.ip_cidr_range,
-    "10.200.0.0/16"
+    "10.200.0.0/16",
   ]
 }
 
@@ -164,10 +166,6 @@ resource "google_compute_router_nat" "egress_traffic_nat" {
   }
 }
 
-output "nat_ips" {
-  value = local.nat_external_addresses
-}
-
 resource "google_compute_route" "egress_traffic_route" {
   count            = var.enable_egress_traffic ? 1 : 0
   project          = module.project.project_id
@@ -189,47 +187,3 @@ resource "google_compute_route" "pod_ip_routes" {
   dest_range  = each.value.metadata.pod-cidr
   next_hop_ip = each.value.network_interface[0].network_ip
 }
-
-resource "google_network_management_connectivity_test" "internal_comms_to_lb" {
-  count       = var.num_workers != 0 ? 1 : 0
-  project     = module.project.project_id
-  name        = format("%s-%s", var.prefix, "internal-comms-to-lb")
-  description = "Validate if the worker instances can contact the Load Balancer (or API server)."
-
-  source {
-    project_id = module.project.project_id
-    network    = google_compute_network.default.id
-    instance   = google_compute_instance.workers.0.id
-  }
-
-  destination {
-    ip_address = google_compute_address.kube_api_server_endpoint.0.address
-    project_id = module.project.project_id
-    network    = google_compute_network.default.id
-    port       = 6443
-  }
-
-  protocol = "TCP"
-}
-
-resource "google_network_management_connectivity_test" "external_api_server_access" {
-  count       = var.num_workers != 0 ? 1 : 0
-  project     = module.project.project_id
-  name        = format("%s-%s", var.prefix, "external-api-server-access")
-  description = "Test if the API server is accessible from an external IP."
-
-  source {
-    ip_address = "78.23.159.34"
-  }
-
-  destination {
-    ip_address = google_compute_address.kube_api_server_endpoint.0.address
-    project_id = module.project.project_id
-    network    = google_compute_network.default.id
-    port       = 6443
-  }
-
-  protocol = "TCP"
-}
-
-

@@ -102,3 +102,9 @@ variable "create_public_ip_address" {
   type        = bool
   default     = true
 }
+
+variable "use_kubeadm" {
+  description = "Initialise the VM with kubeadm installed."
+  type        = bool
+  default     = false
+}
