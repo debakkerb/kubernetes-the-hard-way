@@ -83,6 +83,10 @@ resource "google_compute_firewall" "api_server_access" {
   description = "FW rule to allow access to the public endpoint of the LB, providing access to the API server."
   network     = google_compute_network.default.name
 
+  log_config {
+    metadata = "INCLUDE_ALL_METADATA"
+  }
+
   allow {
     protocol = "tcp"
     ports    = ["6443"]

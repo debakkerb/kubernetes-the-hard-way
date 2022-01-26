@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -eu
+
 # Ensure IP tables see bridged traffic
 
 echo "Ensure IP tables see bridged traffic."
@@ -85,9 +87,7 @@ sudo systemctl restart containerd
 echo "Install kubeadm, kubelet and kubectl"
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
-
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 sudo apt-get update
@@ -111,5 +111,11 @@ sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
 rm cilium-linux-amd64.tar.gz{,.sha256sum}
 
 echo "Startup script completed."
+
+echo 'export SERVICE_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/service-cidr)' >> /etc/profile.d/kube_env.sh
+echo 'export CONTROL_PLANE_ENDPOINT=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/control-plane-endpoint)' >> /etc/profile.d/kube_env.sh
+echo 'export POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)' >> /etc/profile.d/kube_env.sh
+
+sudo sh /etc/profile.d/kube_env.sh
 
 echo "Environment variables set."

@@ -43,14 +43,11 @@ sudo kubeadm init \
 ```
 
 ```shell
+
+
 helm install cilium cilium/cilium --version 1.11.1 \
     --namespace kube-system \
     --set kubeProxyReplacement=strict \
     --set k8sServiceHost=${CONTROL_PLANE_ENDPOINT} \
     --set k8sServicePort=6443
-```
-
-To generate the join command again, run the following:
-```shell
-kubeadm token create $(kubeadm token generate) --print-join-command
 ```
