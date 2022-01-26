@@ -42,6 +42,7 @@ sudo kubeadm init \
   --service-cidr=$SERVICE_CIDR
 ```
 
+### Install Cilium
 ```shell
 helm install cilium cilium/cilium --version 1.11.1 \
     --namespace kube-system \
@@ -49,8 +50,3 @@ helm install cilium cilium/cilium --version 1.11.1 \
     --set k8sServiceHost=${CONTROL_PLANE_ENDPOINT} \
     --set k8sServicePort=6443
 ```
-
-kubeadm join 34.77.112.94:6443 --token dpplq6.qw587z1jo2jl0oxt \
---discovery-token-ca-cert-hash sha256:07f02efea58769d52e8a9d2ee14068c226665d0b0292b3e0623da13a4c4f7174 \
---control-plane --certificate-key 599817413f313adc1c246cf5cf1820e52f08b50a3cd459c0a7c55b09b92f7ff9 \
---v=3
