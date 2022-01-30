@@ -74,13 +74,14 @@ data "google_compute_image" "ubuntu" {
 }
 
 resource "google_compute_instance" "workers" {
-  count          = var.num_workers
-  project        = module.project.project_id
-  name           = format("%s-%s-%s", var.prefix, "worker", count.index)
-  machine_type   = "e2-standard-2"
-  can_ip_forward = true
-  tags           = ["iap-access", "worker"]
-  zone           = var.zone
+  count                   = var.num_workers
+  project                 = module.project.project_id
+  name                    = format("%s-%s-%s", var.prefix, "worker", count.index)
+  machine_type            = "e2-standard-2"
+  can_ip_forward          = true
+  tags                    = ["iap-access", "worker"]
+  zone                    = var.zone
+  metadata_startup_script = var.use_kubeadm ? file("${path.module}/scripts/bootstrap_control_plane_kubeadm.sh") : ""
 
   metadata = {
     pod-cidr     = "10.200.${count.index}.0/24"
