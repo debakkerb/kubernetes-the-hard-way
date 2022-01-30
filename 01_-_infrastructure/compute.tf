@@ -15,7 +15,7 @@
  */
 
 locals {
-  controller_instances_self_links = var.num_controllers != 0 ? [for k, v in google_compute_instance.controllers : v.self_link] : []
+  controller_instances_self_links = var.num_controllers != 0 ? var.use_kubeadm ? [google_compute_instance.controllers.0.self_link] : [for k, v in google_compute_instance.controllers : v.self_link] : []
 
   controller_instance_names = [
     for k, v in google_compute_instance.controllers : v.name

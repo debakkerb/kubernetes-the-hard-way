@@ -112,10 +112,10 @@ rm cilium-linux-amd64.tar.gz{,.sha256sum}
 
 echo "Startup script completed."
 
-echo 'export SERVICE_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/service-cidr)' >> /etc/profile.d/kube_env.sh
-echo 'export CONTROL_PLANE_ENDPOINT=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/control-plane-endpoint)' >> /etc/profile.d/kube_env.sh
-echo 'export POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)' >> /etc/profile.d/kube_env.sh
-
-sudo sh /etc/profile.d/kube_env.sh
+cat <<EOF | sudo tee /etc/profile.d/kube_env.sh
+export SERVICE_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/service-cidr)
+export CONTROL_PLANE_ENDPOINT=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/control-plane-endpoint)
+export POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)
+EOF
 
 echo "Environment variables set."
