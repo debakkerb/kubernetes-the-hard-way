@@ -44,3 +44,22 @@ helm install cilium cilium/cilium --version 1.11.1 \
     --set k8sServiceHost=${CONTROL_PLANE_ENDPOINT} \
     --set k8sServicePort=6443
 ```
+
+### Regenerate `join`-command
+
+To regenerate the join command for **control-plande nodes**, follow these steps:
+
+```shell
+# Upload certs to get a new certificate key
+sudo kubeadm init \
+  phase upload-certs \
+  --upload-certs
+  
+# Generate the new join command
+sudo kubeadm token create --print-join-command
+```
+
+Copy the new join-command and add the following:
+```shell
+--control-plane --certificate-key [CERTIFICATE_KEY_FROM_ABOVE]
+```

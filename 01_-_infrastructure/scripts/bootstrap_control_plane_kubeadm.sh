@@ -16,6 +16,13 @@
 
 set -eu
 
+# Update cluster
+
+echo "Update and upgrade operating system."
+sudo apt-get update && sudo apt-get dist-upgrade -y
+sudo apt-get autoclean -y
+sudo apt-get autoremove -y
+
 # Ensure IP tables see bridged traffic
 
 echo "Ensure IP tables see bridged traffic."
