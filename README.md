@@ -32,13 +32,22 @@ sudo kubeadm init \
   --service-cidr=$SERVICE_CIDR
 ```
 
+### kubeconfig
+Copy the admin configuration file to `$HOME/.kube/config` to be able to talk to the API server
+```
+mkdir $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube.config
+```
+Validate the output of the previous command with `kubectl get ns` and `kubectl get pods -n kube-system`.  This should give you an overview of all namespaces on the clusters and all pods running in the `kube-system`-namespace.
+
 ### Install Cilium
 ```shell
 # Add Helm repo
 helm repo add cilium https://helm.cilium.io/
 
 # Install Cilium plugin
-helm install cilium cilium/cilium --version 1.11.1 \
+helm install cilium cilium/cilium --version 1.11.3 \
     --namespace kube-system \
     --set kubeProxyReplacement=strict \
     --set k8sServiceHost=${CONTROL_PLANE_ENDPOINT} \
